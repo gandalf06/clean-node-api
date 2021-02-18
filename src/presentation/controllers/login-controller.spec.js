@@ -1,16 +1,39 @@
 class LoginController {
   handle (httpRequest) {
     if (!httpRequest || !httpRequest.body) {
-      return {
-        statusCode: 500
-      }
+      return HttpResponse.serverError()
     }
     const { email, password, confirmPassword } = httpRequest.body
-    if (!email || !password || !confirmPassword) {
-      return {
-        statusCode: 400
-      }
+    if (!email) {
+      return HttpResponse.badRequest('email')
     }
+    if (!password) {
+      return HttpResponse.badRequest('password')
+    }
+    if (!confirmPassword) {
+      return HttpResponse.badRequest('confirmPassword')
+    }
+  }
+}
+
+class HttpResponse {
+  static badRequest (paramName) {
+    return {
+      statusCode: 400,
+      body: new MissingParamError(paramName)
+    }
+  }
+
+  static serverError () {
+    return {
+      statusCode: 500
+    }
+  }
+}
+class MissingParamError extends Error {
+  constructor (paramName) {
+    super(`Missing param: ${paramName}`)
+    this.name = MissingParamError
   }
 }
 describe('Login Router', () => {
@@ -23,6 +46,7 @@ describe('Login Router', () => {
     }
     const httpResponse = sut.handle(httpRequest)
     expect(httpResponse.statusCode).toBe(400)
+    expect(httpResponse.body).toEqual(new MissingParamError('email'))
   })
 
   test('should return 400 if no password is provided', () => {
@@ -34,6 +58,7 @@ describe('Login Router', () => {
     }
     const httpResponse = sut.handle(httpRequest)
     expect(httpResponse.statusCode).toBe(400)
+    expect(httpResponse.body).toEqual(new MissingParamError('password'))
   })
   test('should return if no confirmPassword is provided', () => {
     const sut = new LoginController()
@@ -45,6 +70,7 @@ describe('Login Router', () => {
     }
     const httpResponse = sut.handle(httpRequest)
     expect(httpResponse.statusCode).toBe(400)
+    expect(httpResponse.body).toEqual(new MissingParamError('confirmPassword'))
   })
 
   test('should return 500 if no httpRequest is provided', () => {
@@ -53,7 +79,7 @@ describe('Login Router', () => {
     expect(httpResponse.statusCode).toBe(500)
   })
 
-  test('should return 500 if no httpRequest has no body', () => {
+  test('should return 500 if httpRequest has no body', () => {
     const sut = new LoginController()
     const httpRequest = {}
     const httpResponse = sut.handle(httpRequest)
