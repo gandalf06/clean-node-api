@@ -4,12 +4,20 @@
   "description": "API NodeJS - Clean Architecture  and TDD",
   "main": "index.js",
   "scripts": {
-    "test": "jest",
+    "test": "jest --watchAll",
+    "test:staged": "jest",
     "postinstall": "husky install"
   },
   "lint-staged": {
     "*.js": [
-      "standard"
+      "standard --fix",
+      "npm run test:staged --fix",
+      "git add"
+    ]
+  },
+  "standard": {
+    "env": [
+      "jest"
     ]
   },
   "repository": {
