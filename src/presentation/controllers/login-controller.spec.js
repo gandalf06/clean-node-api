@@ -1,6 +1,6 @@
 class LoginController {
   handle (httpRequest) {
-    if (!httpRequest) {
+    if (!httpRequest || !httpRequest.body) {
       return {
         statusCode: 500
       }
@@ -47,9 +47,16 @@ describe('Login Router', () => {
     expect(httpResponse.statusCode).toBe(400)
   })
 
-  test('should return if no httpRequest is provided', () => {
+  test('should return 500 if no httpRequest is provided', () => {
     const sut = new LoginController()
     const httpResponse = sut.handle()
+    expect(httpResponse.statusCode).toBe(500)
+  })
+
+  test('should return 500 if no httpRequest has no body', () => {
+    const sut = new LoginController()
+    const httpRequest = {}
+    const httpResponse = sut.handle(httpRequest)
     expect(httpResponse.statusCode).toBe(500)
   })
 })
